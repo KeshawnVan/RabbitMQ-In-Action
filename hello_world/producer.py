@@ -16,14 +16,37 @@ conn_broker = pika.BlockingConnection(conn_params)
 channel = conn_broker.channel()
 
 # 声明交换器
-channel.exchange_declare(exchange="hello-exchange", exchange_type='direct', passive=False, durable=False, auto_delete=False)
+channel.exchange_declare(exchange="hello-exchange", exchange_type='direct', passive=False, durable=False,
+                         auto_delete=False)
 
 # 获取消息
-msg = 'Hello World 3'
+msg = 'Hello Rabbit'
 
 # 设置消息参数
 msg_props = pika.BasicProperties()
 msg_props.content_type = "text/plain"
 
+# 发送方确认模式处理器
+# def confirm_handler(frame):
+#     if type(frame.method) == spec.Basic.Ack:
+#         if frame.method.delivery_tag in msg_ids:
+#             print("Confirm received!")
+#             msg_ids.remove(frame.method.delivery_tag)
+#     elif type(frame.method) == spec.Basic.Nack:
+#         if frame.method.delivery_tag in msg_ids:
+#             print("Message lost")
+#     elif type(frame.method) == spec.Confirm.SelectOk:
+#         print("Channel in confirm mode")
+
+
+# 设置为confirm模式
+channel.confirm_delivery()
+
 # 发送消息
-channel.basic_publish(body=msg, exchange="hello-exchange", properties=msg_props, routing_key="hola")
+result = channel.basic_publish(body=msg, exchange="hello-exchange", properties=msg_props, routing_key="hola")
+
+# 打印发送结果
+print(result)
+
+# 关闭channel
+channel.close()
